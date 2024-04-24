@@ -93,3 +93,63 @@ Here, the function gets the current date and time using dt.datetime.now(), conve
 ```python
     return str(dt.datetime.now()).strip().replace(" ", "").replace(":", "").replace("-", "").replace(".", "")
 ```
+
+# Attack
+##### Import
+Here, we're importing the sha256 hashing function from the hashlib module and the json module for working with JSON files.
+
+```python
+from hashlib import sha256
+import json
+```
+##### Function
+This line defines a function named attack that takes no arguments and returns a string. The -> str indicates that the function returns a string.
+
+```python
+def attack() -> str:
+```
+Here, we initialize three empty dictionaries. passDict will store the hashed passwords extracted from a JSON file, decryptedPassDict will store decrypted passwords along with the number of attempts, and finalStr will store the final output string.
+```python
+    passDict = {}
+    decryptedPassDict = {}
+    finalStr = "Decrypted passwords are: \n"
+```
+
+This block of code opens and reads user data from the users.json file located in the Data directory. It loads the JSON data into a Python dictionary (data) and then iterates over each key-value pair in the dictionary, storing the keys (user identifiers) and values (hashed passwords) in the passDict dictionary.
+```python
+    with open("Data/users.json", "r") as f:
+        data = json.load(f)
+        for i in data.keys():
+            passDict[i] = data[i]
+```
+This block of code reads a dataset containing passwords to try from the DataSet.txt file and a salt from the Salt.txt file, both located in the Data directory. It iterates over each line in the dataset, removing any leading or trailing whitespace. Then, it iterates over each line in the Salt.txt file, again removing whitespace. For each combination of password and salt, it generates a hash using SHA-256 and compares it with the hashed passwords stored in passDict. If a match is found, it stores the decrypted password and the number of attempts in the decryptedPassDict dictionary.
+```python
+    attempts = 0
+    with open("Data/DataSet.txt", "r") as f:
+        dataSet = f.readlines()
+        for line in dataSet:
+            line = line.strip()
+            with open("Data/Salt.txt", "r") as u:
+                salts = u.readlines()
+                for i in salts:
+                    attempts += 1
+                    i = i.strip()
+                    for ident in passDict.keys():
+                        if sha256(line.encode() + i.encode()).hexdigest() == passDict[ident]:
+                            decryptedPassDict[ident] = [line]
+                            decryptedPassDict[ident].append(attempts)
+```
+This loop iterates over each key-value pair in the decryptedPassDict dictionary, where the key is the user identifier and the value is a list containing the decrypted password and the number of attempts. It appends a formatted string to the finalStr variable for each user, indicating the decrypted password and the number of attempts. Finally, it returns the finalStr variable, which contains the final output string.
+```python
+    for name, tempPass in decryptedPassDict.items():
+        finalStr += f"\t-{name}: {tempPass[0]} in {tempPass[1]} attempts\n"
+    return finalStr
+```
+
+
+# Run the code
+If you want to try this code, open a terminal inside the folder of the project
+```bash
+.\start.sh
+```
+or open the **main.py** file.
